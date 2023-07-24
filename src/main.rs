@@ -236,8 +236,8 @@ for p in assets {
 
         }
 
-        let res = trade_mapper::TradeMapper::insert_equity(Vec::from(equity_histories.clone()));
-    println!("插入权益数据{}, 数据{:?}", res, Vec::from(equity_histories.clone()));
+        let res = trade_mapper::TradeMapper::insert_bybit_equity(Vec::from(equity_bybit_histories.clone()));
+    println!("插入bybit权益数据{}, 数据{:?}", res, Vec::from(equity_bybit_histories.clone()));
 
       let res = trade_mapper::TradeMapper::insert_equity(Vec::from(equity_histories.clone()));
       println!("插入权益数据{}, 数据{:?}", res, Vec::from(equity_histories.clone()));
