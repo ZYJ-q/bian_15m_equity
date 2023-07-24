@@ -15,10 +15,6 @@ use equity_15m::actors::*;
 
 #[warn(unused_mut, unused_variables, dead_code)]
 async fn real_time(
-    // binance_futures_api: BinanceFuturesApi,
-    binance: &Vec<Value>,
-    binance_spot: &Vec<Value>,
-    bybit_futures: &Vec<Value>,
     symbols: &Vec<Value>,
     mut ssh_api: SshClient,
     wx_robot: WxbotHttpClient,
@@ -294,11 +290,6 @@ async fn main() {
     let real_time_handle = tokio::spawn(async move {
         // let mut futures_config: Map<String, Value> = Map::new();
         // let mut servers_config = Map::new();
-        let binance_config = config.get("Binance").unwrap();
-        let bybit_config = config.get("ByBit").unwrap();
-        let binance_future_config = binance_config.get("futures").unwrap().as_array().unwrap();
-        let binance_spot_config = binance_config.get("spot").unwrap().as_array().unwrap();
-        let bybit_futures_config = bybit_config.get("futures").unwrap().as_array().unwrap();
         let server_config = config.get("Server").unwrap();
         let symbols = config.get("Symbols").unwrap().as_array().unwrap();
         let key = config.get("Alarm").unwrap().get("webhook").unwrap().as_str().unwrap();
@@ -376,7 +367,7 @@ async fn main() {
         
         info!("created http client");
 
-            real_time(binance_future_config, binance_spot_config, bybit_futures_config, symbols, ssh_api, wx_robot, 500.0).await;
+            real_time(symbols, ssh_api, wx_robot, 500.0).await;
         
     });
 
