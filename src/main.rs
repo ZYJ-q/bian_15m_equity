@@ -130,19 +130,6 @@ async fn real_time(
                     if symbol == "ETH" {
                         continue;
                     }
-                    // if symbol == "ETH" && name == "3" || symbol == "BNB" && name == "12" {
-                    //     let asset = format!("{}USDT", symbol);
-                    //     if let Some(data) = binance_futures_api.get_klines(&asset).await {
-                    //         let v: Value = serde_json::from_str(&data).unwrap();
-                    //         let price_obj = v.as_object().unwrap();
-                    //         let price:f64 = price_obj.get("price").unwrap().as_str().unwrap().parse().unwrap();
-                    //         best_price = price;
-                    //         let new_price = wallet_balance * price;
-                    //         // new_total_balance += new_price;
-                    //         new_total_equity += new_price;
-                    //     }
-                    // }
-    
                     let cross_un_pnl: f64 = obj.get("crossUnPnl").unwrap().as_str().unwrap().parse().unwrap();
                     let pnl = cross_un_pnl + wallet_balance;
                     // new_total_balance += wallet_balance;
@@ -207,7 +194,7 @@ async fn real_time(
         let mut equity_map: Map<String, Value> = Map::new();
         let date = format!("{}", now.format("%Y/%m/%d %H:%M:%S"));
     let binance_papi_api=BinancePapiApi::new(
-        "https://api.bybit.com",
+        "https://papi.binance.com",
         &f_config.api_key,
         &f_config.secret_key,
     );
