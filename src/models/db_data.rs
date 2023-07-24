@@ -22,6 +22,22 @@ pub struct Product {
     pub prog_id: u64,
 }
 
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct Positions {
+    pub tra_id: u64,
+    pub tra_venue: String,
+    pub ori_balance: String,
+    pub tra_currency: String,
+    pub api_key: String,
+    pub secret_key: String,
+    pub other_keys: String,
+    pub r#type: String,
+    pub name: String,
+    pub alarm: String,
+    pub threshold: String
+}
+
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Active {
     pub acc_id: u64,
