@@ -95,6 +95,8 @@ async fn real_time(
         if let Ok(binances) = res {
 
         for f_config in binances {
+            let borrow = f_config.borrow;
+            let borrows: Vec<&str> = borrow.split('-').collect();
             if &f_config.tra_venue == "Binance" && &f_config.r#type == "Futures" {
                 let mut equity_map: Map<String, Value> = Map::new();
                 let date = format!("{}", now.format("%Y/%m/%d %H:%M:%S"));
@@ -105,6 +107,7 @@ async fn real_time(
                 &f_config.secret_key,
             );
             let name = f_config.tra_id;
+            
             // let new_name:u64 = name.parse().unwrap();
             // let pro_id = binance_config.get("pro_id").unwrap().as_str().unwrap();
 
@@ -120,10 +123,7 @@ async fn real_time(
                 let symbol = obj.get("asset").unwrap().as_str().unwrap();
     
                 if wallet_balance != 0.00 {
-                    if symbol == "BNB"{
-                        continue;
-                    }
-                    if symbol == "ETH" {
+                    if symbol == borrows[0]{
                         continue;
                     }
                     let cross_un_pnl: f64 = obj.get("crossUnPnl").unwrap().as_str().unwrap().parse().unwrap();
@@ -210,7 +210,7 @@ for p in assets {
         continue;
     } else {
         let symbol = obj.get("asset").unwrap().as_str().unwrap();
-        if symbol == "BTC" {
+        if symbol == borrows[0] {
             continue;
         } else {
             let unrealied_um:f64 = obj.get("umUnrealizedPNL").unwrap().as_str().unwrap().parse().unwrap();

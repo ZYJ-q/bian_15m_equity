@@ -14,8 +14,8 @@ impl TradeMapper {
     let mut conn = get_connect();
     let res = conn.query_map(
       r"select * from test_traders",
-      |(tra_id, tra_venue, ori_balance, tra_currency, api_key, secret_key, other_keys, r#type, name, alarm, threshold)| {
-        Positions{ tra_id, tra_venue, ori_balance, tra_currency, api_key, secret_key, other_keys, r#type, name, alarm, threshold }
+      |(tra_id, tra_venue, tra_currency, api_key, secret_key, r#type, name, alarm, threshold, borrow, amount, wx_hook)| {
+        Positions{ tra_id, tra_venue, tra_currency, api_key, secret_key, r#type, name, alarm, threshold, borrow, amount, wx_hook }
       } 
     ).unwrap();
     return Ok(res);
