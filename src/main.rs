@@ -171,9 +171,10 @@ async fn real_time(
                 equity_bybit_map.insert(String::from("name"), Value::from(name));
                 equity_bybit_map.insert(String::from("time"), Value::from(date.clone()));
                 equity_bybit_map.insert(String::from("equity"), Value::from(equity));
+                equity_bybit_map.insert(String::from("type"), Value::from("Futures"));
             }
 
-            equity_bybit_histories.push_back(Value::from(equity_bybit_map));
+            equity_histories.push_back(Value::from(equity_bybit_map));
 
              
         }
@@ -236,8 +237,8 @@ for p in assets {
 
         }
 
-        let res = trade_mapper::TradeMapper::insert_bybit_equity(Vec::from(equity_bybit_histories.clone()));
-    println!("插入bybit权益数据{}, 数据{:?}", res, Vec::from(equity_bybit_histories.clone()));
+    //     let res = trade_mapper::TradeMapper::insert_bybit_equity(Vec::from(equity_bybit_histories.clone()));
+    // println!("插入bybit权益数据{}, 数据{:?}", res, Vec::from(equity_bybit_histories.clone()));
 
       let res = trade_mapper::TradeMapper::insert_equity(Vec::from(equity_histories.clone()));
       println!("插入权益数据{}, 数据{:?}", res, Vec::from(equity_histories.clone()));
