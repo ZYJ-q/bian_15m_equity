@@ -5,12 +5,12 @@ use chrono:: Utc;
 use log::{info, warn};
 use serde_json::{Map, Value};
 // use tokio::{sync::broadcast::{self, Receiver}};
-use equity_15m::adapters::binance::futures::http::actions::BinanceFuturesApi;
-use equity_15m::adapters::bybit::futures::http::actions::ByBitFuturesApi;
-use equity_15m::adapters::binance::papi::http::actions::BinancePapiApi;
-use equity_15m::base::ssh::SshClient;
-use equity_15m::base::wxbot::WxbotHttpClient;
-use equity_15m::actors::*;
+use equity_15m_bybit_bian::adapters::binance::futures::http::actions::BinanceFuturesApi;
+use equity_15m_bybit_bian::adapters::bybit::futures::http::actions::ByBitFuturesApi;
+use equity_15m_bybit_bian::adapters::binance::papi::http::actions::BinancePapiApi;
+use equity_15m_bybit_bian::base::ssh::SshClient;
+use equity_15m_bybit_bian::base::wxbot::WxbotHttpClient;
+use equity_15m_bybit_bian::actors::*;
 // use test_alarm::models::http_data::*;
 
 #[warn(unused_mut, unused_variables, dead_code)]

@@ -433,7 +433,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "equity_15m"
+name = "equity_15m_bybit_bian"
 version = "0.1.0"
 dependencies = [
  "base64 0.21.0",
