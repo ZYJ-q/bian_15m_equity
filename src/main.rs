@@ -2,7 +2,7 @@ use std::collections::VecDeque;
 use std::{collections::HashMap, fs, time::Duration};
 // use chrono::Local;
 use chrono:: Utc;
-use log::{info, warn};
+use log::{info, warn, error};
 use serde_json::{Map, Value};
 // use tokio::{sync::broadcast::{self, Receiver}};
 use equity_15m_bybit_bian::adapters::binance::futures::http::actions::BinanceFuturesApi;
@@ -57,46 +57,12 @@ async fn real_time(
 
         // 监控服务器状态
         info!("server process");
-        // let mut server_status: VecDeque<Value> = VecDeque::new();
-        // let mut server_process: Map<String, Value> = Map::new();
-        // print!("判断是true还是false {}", ssh_api.search_py_ps());
-        // match ssh_api.search_py_ps() {
-        //     true => {
-        //         if !running {
-        //             running = true;
-        //             print!("改变running的值{}", running);
-        //             // let sender = "程序开启";
-        //             // let content = format!("process name: {}", ssh_api.get_root_name());
-        //             // wx_robot.send_text(sender, &content).await;
-        //         }
-        //         server_process.insert(String::from("status"), Value::from("running"));
-        //         server_process.insert(String::from("info"), Value::from(""));
-        //     }
-        //     false => {
-        //         server_process.insert(String::from("status"), Value::from("stopped"));
-        //         let mut info = ssh_api.download_log();
-        //         if running {
-        //             running = false;
-        //             // let sender = "程序停止";
-        //             let content;
-        //             if info == "" {
-        //                 content = format!("{}: 未找到错误，请查看日志", ssh_api.get_root_name());
-        //             }else {
-        //                 content = format!("{}: {}", ssh_api.get_root_name(), &info);
-        //             }
-        //             // wx_robot.send_text(sender, &content).await;
-        //             info = content;
-        //         }
-        //         server_process.insert(String::from("info"), Value::from(info));
-        //     }
-        // }
-        // map.insert(String::from("server"), Value::from(server_process));
         let res = trade_mapper::TradeMapper::get_traders();
         if let Ok(binances) = res {
 
         for f_config in binances {
             let borrow = f_config.borrow;
-            let borrows: Vec<&str> = borrow.split('-').collect();
+            // let borrows: Vec<&str> = borrow.split('-').collect();
             if &f_config.tra_venue == "Binance" && &f_config.r#type == "Futures" {
                 let mut equity_map: Map<String, Value> = Map::new();
                 let date = format!("{}", now.format("%Y/%m/%d %H:%M:%S"));
@@ -123,9 +89,13 @@ async fn real_time(
                 let symbol = obj.get("asset").unwrap().as_str().unwrap();
     
                 if wallet_balance != 0.00 {
-                    if symbol == borrows[0]{
-                        continue;
+                    if borrow.len() != 0 {
+                        let borrows: Vec<&str> = borrow.split('-').collect();
+                        if symbol == borrows[0]{
+                            continue;
+                        }
                     }
+                    
                     let cross_un_pnl: f64 = obj.get("crossUnPnl").unwrap().as_str().unwrap().parse().unwrap();
                     let pnl = cross_un_pnl + wallet_balance;
                     // new_total_balance += wallet_balance;
@@ -141,8 +111,67 @@ async fn real_time(
             // equity_map.insert(String::from("prod_id"), Value::from(pro_id));
             equity_map.insert(String::from("type"), Value::from("Futures"));
             equity_histories.push_back(Value::from(equity_map));
+            } else {
+                error!("Can't get {} bian-futures-positions.", name);
+                continue;     
             }
         }
+
+
+
+
+        if &f_config.tra_venue == "Binance" && &f_config.r#type == "Papi"{
+            let mut equity_map: Map<String, Value> = Map::new();
+            let date = format!("{}", now.format("%Y/%m/%d %H:%M:%S"));
+        let binance_papi_api=BinancePapiApi::new(
+            "https://papi.binance.com",
+            &f_config.api_key,
+            &f_config.secret_key,
+        );
+        let name = f_config.tra_id;
+        // let new_name:u64 = name.parse().unwrap();
+        // let pro_id = binance_config.get("pro_id").unwrap().as_str().unwrap();
+    
+        if let Some(data) = binance_papi_api.account(None).await {
+            let value: Value = serde_json::from_str(&data).unwrap();
+            let assets = value.as_array().unwrap();
+        let mut equity = 0.0;
+    
+    for p in assets {
+        let obj = p.as_object().unwrap();
+        let amt:f64 = obj.get("totalWalletBalance").unwrap().as_str().unwrap().parse().unwrap();
+        if amt == 0.0 {
+            continue;
+        } else {
+            let symbol = obj.get("asset").unwrap().as_str().unwrap();
+            if borrow.len() != 0 {
+                let borrows: Vec<&str> = borrow.split('-').collect();
+                if symbol == borrows[0]{
+                    continue;
+                }
+            }  
+            
+                let unrealied_um:f64 = obj.get("umUnrealizedPNL").unwrap().as_str().unwrap().parse().unwrap();
+                let unrealied_cm:f64 = obj.get("cmUnrealizedPNL").unwrap().as_str().unwrap().parse().unwrap();
+                let unrealied = unrealied_cm + unrealied_um;
+                let total_equity = unrealied + amt;
+                equity += total_equity;
+            
+        }
+    
+        
+    }
+            equity_map.insert(String::from("time"), Value::from(date));
+            equity_map.insert(String::from("name"), Value::from(name));
+                equity_map.insert(String::from("equity"), Value::from(equity));
+        // equity_map.insert(String::from("prod_id"), Value::from(pro_id));
+        equity_map.insert(String::from("type"), Value::from("Papi"));
+        equity_histories.push_back(Value::from(equity_map));
+        } else {
+            error!("Can't get {} biance-papi-positions.", name);
+            continue;
+        }
+    }
 
         
 
@@ -177,75 +206,30 @@ async fn real_time(
             equity_histories.push_back(Value::from(equity_bybit_map));
 
              
-        }
-
-    
-
-}
-
-
-
-    
-
-    if &f_config.tra_venue == "Binance" && &f_config.r#type == "Papi"{
-        let mut equity_map: Map<String, Value> = Map::new();
-        let date = format!("{}", now.format("%Y/%m/%d %H:%M:%S"));
-    let binance_papi_api=BinancePapiApi::new(
-        "https://papi.binance.com",
-        &f_config.api_key,
-        &f_config.secret_key,
-    );
-    let name = f_config.tra_id;
-    // let new_name:u64 = name.parse().unwrap();
-    // let pro_id = binance_config.get("pro_id").unwrap().as_str().unwrap();
-
-    if let Some(data) = binance_papi_api.account(None).await {
-        let value: Value = serde_json::from_str(&data).unwrap();
-        let assets = value.as_array().unwrap();
-    let mut equity = 0.0;
-
-for p in assets {
-    let obj = p.as_object().unwrap();
-    let amt:f64 = obj.get("totalWalletBalance").unwrap().as_str().unwrap().parse().unwrap();
-    if amt == 0.0 {
-        continue;
-    } else {
-        let symbol = obj.get("asset").unwrap().as_str().unwrap();
-        if symbol == borrows[0] {
-            continue;
         } else {
-            let unrealied_um:f64 = obj.get("umUnrealizedPNL").unwrap().as_str().unwrap().parse().unwrap();
-            let unrealied_cm:f64 = obj.get("cmUnrealizedPNL").unwrap().as_str().unwrap().parse().unwrap();
-            let unrealied = unrealied_cm + unrealied_um;
-            let total_equity = unrealied + amt;
-            equity += total_equity;
+            error!("Can't get {} bybit-positions.", name);
+            continue;
         }
-    }
 
     
+
 }
-        equity_map.insert(String::from("time"), Value::from(date));
-        equity_map.insert(String::from("name"), Value::from(name));
-            equity_map.insert(String::from("equity"), Value::from(equity));
-    // equity_map.insert(String::from("prod_id"), Value::from(pro_id));
-    equity_map.insert(String::from("type"), Value::from("Papi"));
-    equity_histories.push_back(Value::from(equity_map));
-    }
-}
+
+
+
+    
+
+    
 
 }
 
         }
 
-    //     let res = trade_mapper::TradeMapper::insert_bybit_equity(Vec::from(equity_bybit_histories.clone()));
-    // println!("插入bybit权益数据{}, 数据{:?}", res, Vec::from(equity_bybit_histories.clone()));
 
       let res = trade_mapper::TradeMapper::insert_equity(Vec::from(equity_histories.clone()));
-      println!("插入权益数据{}, 数据{:?}", res, Vec::from(equity_histories.clone()));
+      println!("插入权益数据{}", res);
 
 
-        // let res = trade_mapper::TradeMapper::insert_bybit_equity(Vec::from(equity_bybit_histories.clone()));
-        // println!("插入bybit权益数据{}, 数据{:?}", res, Vec::from(equity_bybit_histories.clone()));
 
 
         // 获取账户信息
