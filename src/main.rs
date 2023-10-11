@@ -193,7 +193,7 @@ async fn real_time(
         if let Some(data) = bybit_futures_api.get_account_overview(Some("UNIFIED")).await {
             let value: Value = serde_json::from_str(&data).unwrap();
             println!("value{}, {}", value, name);
-            if name == 11{
+            if name == 11 || name== 13{
                 continue;
             }
             let result = value.get("result").unwrap().as_object().unwrap();
