@@ -32,11 +32,7 @@ pub struct Positions {
     pub secret_key: String,
     pub r#type: String,
     pub name: String,
-    pub alarm: String,
-    pub threshold: String,
     pub borrow: String,
-    pub amount: String,
-    pub wx_hook: String,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
